@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type UserProfile = {
-  firstName: string;
+  firstName: string; 
   lastName: string;
   email: string;
   profileImg?: string;
