@@ -2,14 +2,15 @@
 
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import Snackbar from "@mui/material/Snackbar";
-import MuiAlert, { AlertColor } from "@mui/material/Alert";
-import GoogleIcon from "@mui/icons-material/Google";
-import GitHubIcon from "@mui/icons-material/GitHub";
+import MuiAlert, { AlertColor, AlertProps } from "@mui/material/Alert";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 // MUI Alert komponenti
-const Alert = React.forwardRef<HTMLDivElement, any>(function Alert(props, ref) {
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
+  props,
+  ref
+) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
@@ -190,7 +191,6 @@ export default function RegisterForm() {
                 <option value="en">EN</option>
                 <option value="ru">RU</option>
               </select>
-             
             </div>
           </div>
 
@@ -391,6 +391,7 @@ const OAuthButton: React.FC<{
     {label}
   </button>
 );
+
 // Logo component
 const LogoSVG: React.FC = () => (
   <svg width="56" height="56" viewBox="0 0 120 120" aria-hidden>
