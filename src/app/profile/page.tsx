@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type UserProfile = {
   firstName: string;
@@ -12,12 +13,13 @@ type UserProfile = {
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
       // agar token yo‘q bo‘lsa login sahifaga yuborish
-      window.location.href = "/login";
+      router.push("/login");
       return;
     }
 
@@ -36,10 +38,10 @@ export default function ProfilePage() {
       .catch(() => {
         // token xato yoki eskirgan bo‘lsa
         localStorage.removeItem("accessToken");
-        window.location.href = "/";
+        router.push("/");
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [router]);
 
   if (loading) {
     return <div className="p-6">⏳ Yuklanmoqda...</div>;
