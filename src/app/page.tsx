@@ -165,7 +165,7 @@ export default function RegisterForm() {
   }
 
   function handleOAuth(provider: "google" | "github") {
-    window.location.href = `https://faxriddin-umidjon-dev.uz/auth/${provider}`;
+    window.location.href = `https://faxriddin.umidjon-dev.uz/auth/${provider}`;
   }
 
   return (
