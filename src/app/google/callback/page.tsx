@@ -1,13 +1,16 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useState, FormEvent, ChangeEvent, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import axios from "axios";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertColor, AlertProps } from "@mui/material/Alert";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
-// MUI alert
+// ✅ Snackbar uchun alohida alert component
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
   ref
@@ -26,60 +29,52 @@ export default function GooglePasswordForm() {
 
   // Tokens
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [refreshToken, setRefreshToken] = useState<string | null>(null);
 
   // Snackbar
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState<AlertColor>("success");
 
-  // querydan tokenlarni olish
+  // ✅ querydan tokenlarni olish
   useEffect(() => {
     const access = searchParams.get("accessToken");
     const refresh = searchParams.get("refreshToken");
 
-    if (access) setAccessToken(access);
-    if (refresh) setRefreshToken(refresh);
-
-    // Agar xohlasa localStorage ga saqlab qo‘yish mumkin
-    if (access) localStorage.setItem("accessToken", access);
-    if (refresh) localStorage.setItem("refreshToken", refresh);
+    if (access) {
+      setAccessToken(access);
+      localStorage.setItem("accessToken", access);
+    }
+    if (refresh) {
+      localStorage.setItem("refreshToken", refresh);
+    }
   }, [searchParams]);
 
+  // ✅ form submit
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (!accessToken) {
-        throw new Error("Token topilmadi");
-      }
+      if (!accessToken) throw new Error("Token topilmadi");
 
-      const res = await fetch(
+      await axios.post(
         "https://faxriddin.umidjon-dev.uz/auth/google/password",
+        { password, age: Number(age) },
         {
-          method: "POST",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
-          body: JSON.stringify({ password, age: Number(age) }),
         }
       );
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Xatolik yuz berdi");
-      }
 
       setAlertMessage("Muvaffaqiyatli ro‘yxatdan o‘tdingiz!");
       setAlertSeverity("success");
       setAlertOpen(true);
 
       setTimeout(() => router.push("/profile"), 1500);
-    } catch (error) {
+    } catch (err: any) {
       const errMessage =
-        error instanceof Error ? error.message : "Xatolik yuz berdi";
+        err.response?.data?.message || err.message || "Xatolik yuz berdi";
       setAlertMessage(errMessage);
       setAlertSeverity("error");
       setAlertOpen(true);
@@ -98,6 +93,7 @@ export default function GooglePasswordForm() {
           Ro‘yxatdan o‘tish
         </h2>
 
+        {/* Yosh */}
         <div>
           <label className="block text-sm font-medium mb-1">Yosh</label>
           <input
@@ -112,6 +108,7 @@ export default function GooglePasswordForm() {
           />
         </div>
 
+        {/* Parol */}
         <div>
           <label className="block text-sm font-medium mb-1">Parol</label>
           <div className="relative">
@@ -135,6 +132,7 @@ export default function GooglePasswordForm() {
           </div>
         </div>
 
+        {/* Submit */}
         <button
           type="submit"
           disabled={loading}
@@ -144,6 +142,7 @@ export default function GooglePasswordForm() {
         </button>
       </form>
 
+      {/* Snackbar */}
       <Snackbar
         open={alertOpen}
         autoHideDuration={4000}
