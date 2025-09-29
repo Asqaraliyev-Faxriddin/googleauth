@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, FormEvent, ChangeEvent } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, FormEvent, ChangeEvent, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertColor, AlertProps } from "@mui/material/Alert";
 import Visibility from "@mui/icons-material/Visibility";
@@ -17,22 +17,40 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
 
 export default function GooglePasswordForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [password, setPassword] = useState("");
   const [age, setAge] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Tokens
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
 
   // Snackbar
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState<AlertColor>("success");
 
+  // querydan tokenlarni olish
+  useEffect(() => {
+    const access = searchParams.get("accessToken");
+    const refresh = searchParams.get("refreshToken");
+
+    if (access) setAccessToken(access);
+    if (refresh) setRefreshToken(refresh);
+
+    // Agar xohlasa localStorage ga saqlab qo‘yish mumkin
+    if (access) localStorage.setItem("accessToken", access);
+    if (refresh) localStorage.setItem("refreshToken", refresh);
+  }, [searchParams]);
+
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) {
         throw new Error("Token topilmadi");
       }
