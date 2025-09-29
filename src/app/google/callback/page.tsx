@@ -36,7 +36,7 @@ export default function GooglePasswordForm() {
       if (!accessToken) throw new Error("Token topilmadi");
 
       const res = await fetch(
-        "https://faxriddin.umidjon-dev.uz/api/google/password",
+        "https://faxriddin.umidjon-dev.uz/auth/google/password",
         {
           method: "POST",
           headers: {
