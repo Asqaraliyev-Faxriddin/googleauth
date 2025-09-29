@@ -40,11 +40,9 @@ export default function GooglePasswordForm() {
 
     if (access) {
       setAccessToken(access);
-      if (typeof window !== "undefined") {
-        localStorage.setItem("accessToken", access);
-      }
+      localStorage.setItem("accessToken", access);
     }
-    if (refresh && typeof window !== "undefined") {
+    if (refresh) {
       localStorage.setItem("refreshToken", refresh);
     }
   }, [searchParams]);
@@ -61,9 +59,7 @@ export default function GooglePasswordForm() {
         "https://faxriddin.umidjon-dev.uz/auth/google/password",
         { password, age: Number(age) },
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
 
