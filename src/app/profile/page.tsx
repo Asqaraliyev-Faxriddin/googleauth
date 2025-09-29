@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useRouter } from "next/router";
 
 interface Profile {
   id: string;
@@ -16,6 +17,7 @@ export default function Page() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter() 
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -23,6 +25,9 @@ export default function Page() {
         const token = localStorage.getItem("accessToken");
         if (!token) {
           setError("Token topilmadi");
+
+          router.push('/login')
+
           setLoading(false);
           return;
         }
@@ -39,6 +44,12 @@ export default function Page() {
 
         setProfile(res.data.data);
       } catch (err) {
+
+        if (axios.isAxiosError(err)) {
+          if (err.response?.status === 401) {
+            router.push("/login");
+          }
+        }
         setError("Profilni olishda xatolik yuz berdi");
       } finally {
         setLoading(false);
