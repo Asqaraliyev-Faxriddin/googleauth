@@ -90,12 +90,8 @@ const translations: Record<Lang, Record<string, string>> = {
 };
 
 export default function RegisterForm() {
-
-  
-  const router = useRouter()
+  const router = useRouter();
   const setUser = useUserStore((s) => s.setUser);
-
-
 
   const [form, setForm] = useState<FormData>({
     firstName: "",
@@ -141,6 +137,45 @@ export default function RegisterForm() {
     return errs;
   }
 
+  // yordamchi: backend javobidan xabarni chiqarib olish
+  function extractBackendMessage(data: any, fallback?: unknown) {
+    if (!data) {
+      if (fallback && typeof fallback === "string") return fallback;
+      return "Xatolik yuz berdi.";
+    }
+
+    // agar string bo'lsa, JSON parse qilishga harakat qilamiz
+    if (typeof data === "string") {
+      try {
+        const parsed = JSON.parse(data);
+        if (parsed?.message) return parsed.message;
+        return data;
+      } catch {
+        return data;
+      }
+    }
+
+    // agar object bo'lsa - common formatlarni tekshiramiz
+    if (typeof data === "object") {
+      if ("message" in data && typeof data.message === "string")
+        return data.message;
+      if ("error" in data && typeof data.error === "string") return data.error;
+      if ("errors" in data && Array.isArray(data.errors)) {
+        return data.errors
+          .map((e: any) => e.msg || e.message || JSON.stringify(e))
+          .join(", ");
+      }
+      // oxirgi chora — obyektni stringify qilamiz
+      try {
+        return JSON.stringify(data);
+      } catch {
+        return "Xatolik yuz berdi.";
+      }
+    }
+
+    return String(data);
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const v = validate();
@@ -151,10 +186,10 @@ export default function RegisterForm() {
       setAlertOpen(true);
       return;
     }
-  
+
     setSubmitting(true);
     try {
-      // 1️⃣ Global store ga yozamiz
+      // 1️⃣ Global store ga yozamiz (agar xohlasangiz uni keyinroq ham qilishingiz mumkin)
       setUser({
         firstName: form.firstName,
         lastName: form.lastName,
@@ -162,24 +197,47 @@ export default function RegisterForm() {
         password: form.password,
         age: Number(form.age),
       });
-  
+
       // 2️⃣ Backendga emailni yuboramiz
       await axios.post("https://faxriddin.umidjon-dev.uz/verification/send", {
         type: "register",
         email: form.email,
       });
-  
+
       // 3️⃣ Snackbar + router.push
       setAlertMessage("Emailingizga code yuborildi!");
       setAlertSeverity("success");
       setAlertOpen(true);
-  
+
       router.push("/sms/email/code");
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
-      setAlertMessage("Xatolik yuz berdi.");
+
+      // Axios xatolarini aniqlash va backenddan kelgan to'liq xabarni chiqarish
+      let backendMsg = "Xatolik yuz berdi.";
+      // @ts-ignore - axios.isAxiosError borligini tekshiramiz
+      if (axios.isAxiosError && axios.isAxiosError(err)) {
+        const e = err as any;
+        backendMsg = extractBackendMessage(e.response?.data, e.message);
+      } else if (err && typeof err === "object" && "message" in err) {
+        backendMsg = String((err as any).message);
+      } else {
+        backendMsg = String(err ?? "Xatolik yuz berdi.");
+      }
+
+      // Snackbar uchun xabar
+      setAlertMessage(backendMsg);
       setAlertSeverity("error");
       setAlertOpen(true);
+
+      // Agar backend email bilan bog'liq xatoni qaytargan bo'lsa, email input ostida ko'rsatamiz
+      // Masalan: "Email already used"
+      if (
+        typeof backendMsg === "string" &&
+        /email/i.test(backendMsg) // oddiy tekshiruv, kerak bo'lsa aniqroq regex qo'shing
+      ) {
+        setErrors((prev) => ({ ...prev, email: backendMsg }));
+      }
     } finally {
       setSubmitting(false);
     }
