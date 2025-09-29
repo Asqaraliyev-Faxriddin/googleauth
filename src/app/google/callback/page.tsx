@@ -72,14 +72,13 @@ export default function GooglePasswordForm() {
       setAlertOpen(true);
 
       setTimeout(() => router.push("/profile"), 1500);
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as unknown as { response?: { data?: { message?: string } }; message?: string };
       const errMessage =
-        err.response?.data?.message || err.message || "Xatolik yuz berdi";
+        error.response?.data?.message || error.message || "Xatolik yuz berdi";
       setAlertMessage(errMessage);
       setAlertSeverity("error");
       setAlertOpen(true);
-    } finally {
-      setLoading(false);
     }
   }
 
