@@ -27,13 +27,15 @@ export default function GooglePasswordForm() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState<AlertColor>("success");
 
-  async function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
 
     try {
       const accessToken = localStorage.getItem("accessToken");
-      if (!accessToken) throw new Error("Token topilmadi");
+      if (!accessToken) {
+        throw new Error("Token topilmadi");
+      }
 
       const res = await fetch(
         "https://faxriddin.umidjon-dev.uz/auth/google/password",
@@ -47,15 +49,20 @@ export default function GooglePasswordForm() {
         }
       );
 
-      if (!res.ok) throw new Error("Xatolik yuz berdi");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Xatolik yuz berdi");
+      }
 
       setAlertMessage("Muvaffaqiyatli ro‘yxatdan o‘tdingiz!");
       setAlertSeverity("success");
       setAlertOpen(true);
 
       setTimeout(() => router.push("/profile"), 1500);
-    } catch (err: any) {
-      setAlertMessage(err.message || "Xatolik yuz berdi");
+    } catch (error) {
+      const errMessage =
+        error instanceof Error ? error.message : "Xatolik yuz berdi";
+      setAlertMessage(errMessage);
       setAlertSeverity("error");
       setAlertOpen(true);
     } finally {
