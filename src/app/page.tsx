@@ -8,6 +8,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/useUserStore";
 import axios from "axios";
+import Image from "next/image";
 
 // MUI Alert komponenti
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
@@ -104,7 +105,6 @@ export default function RegisterForm() {
   const [errors, setErrors] = useState<Errors>({});
   const [submitting, setSubmitting] = useState(false);
   const [lang, setLang] = useState<Lang>("uz");
-  const [dark, setDark] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
 
@@ -137,37 +137,44 @@ export default function RegisterForm() {
     return errs;
   }
 
-  // yordamchi: backend javobidan xabarni chiqarib olish
-  function extractBackendMessage(data: any, fallback?: unknown) {
+  // ✅ Backend javobidan xabar chiqaruvchi helper
+  function extractBackendMessage(data: unknown, fallback?: unknown): string {
     if (!data) {
       if (fallback && typeof fallback === "string") return fallback;
       return "Xatolik yuz berdi.";
     }
 
-    // agar string bo'lsa, JSON parse qilishga harakat qilamiz
     if (typeof data === "string") {
       try {
         const parsed = JSON.parse(data);
-        if (parsed?.message) return parsed.message;
+        if (typeof parsed?.message === "string") return parsed.message;
         return data;
       } catch {
         return data;
       }
     }
 
-    // agar object bo'lsa - common formatlarni tekshiramiz
-    if (typeof data === "object") {
-      if ("message" in data && typeof data.message === "string")
-        return data.message;
-      if ("error" in data && typeof data.error === "string") return data.error;
-      if ("errors" in data && Array.isArray(data.errors)) {
-        return data.errors
-          .map((e: any) => e.msg || e.message || JSON.stringify(e))
+    if (typeof data === "object" && data !== null) {
+      const obj = data as Record<string, unknown>;
+      if (typeof obj.message === "string") return obj.message;
+      if (typeof obj.error === "string") return obj.error;
+      if (Array.isArray(obj.errors)) {
+        return obj.errors
+          .map((e: unknown) => {
+            if (
+              typeof e === "object" &&
+              e !== null &&
+              "message" in e &&
+              typeof (e as { message?: string }).message === "string"
+            ) {
+              return (e as { message: string }).message;
+            }
+            return JSON.stringify(e);
+          })
           .join(", ");
       }
-      // oxirgi chora — obyektni stringify qilamiz
       try {
-        return JSON.stringify(data);
+        return JSON.stringify(obj);
       } catch {
         return "Xatolik yuz berdi.";
       }
@@ -189,7 +196,6 @@ export default function RegisterForm() {
 
     setSubmitting(true);
     try {
-      // 1️⃣ Global store ga yozamiz (agar xohlasangiz uni keyinroq ham qilishingiz mumkin)
       setUser({
         firstName: form.firstName,
         lastName: form.lastName,
@@ -198,13 +204,11 @@ export default function RegisterForm() {
         age: Number(form.age),
       });
 
-      // 2️⃣ Backendga emailni yuboramiz
       await axios.post("https://faxriddin.umidjon-dev.uz/verification/send", {
         type: "register",
         email: form.email,
       });
 
-      // 3️⃣ Snackbar + router.push
       setAlertMessage("Emailingizga code yuborildi!");
       setAlertSeverity("success");
       setAlertOpen(true);
@@ -213,29 +217,20 @@ export default function RegisterForm() {
     } catch (err: unknown) {
       console.error(err);
 
-      // Axios xatolarini aniqlash va backenddan kelgan to'liq xabarni chiqarish
       let backendMsg = "Xatolik yuz berdi.";
-      // @ts-ignore - axios.isAxiosError borligini tekshiramiz
-      if (axios.isAxiosError && axios.isAxiosError(err)) {
-        const e = err as any;
-        backendMsg = extractBackendMessage(e.response?.data, e.message);
+      if (axios.isAxiosError(err)) {
+        backendMsg = extractBackendMessage(err.response?.data, err.message);
       } else if (err && typeof err === "object" && "message" in err) {
-        backendMsg = String((err as any).message);
+        backendMsg = String((err as { message?: string }).message);
       } else {
         backendMsg = String(err ?? "Xatolik yuz berdi.");
       }
 
-      // Snackbar uchun xabar
       setAlertMessage(backendMsg);
       setAlertSeverity("error");
       setAlertOpen(true);
 
-      // Agar backend email bilan bog'liq xatoni qaytargan bo'lsa, email input ostida ko'rsatamiz
-      // Masalan: "Email already used"
-      if (
-        typeof backendMsg === "string" &&
-        /email/i.test(backendMsg) // oddiy tekshiruv, kerak bo'lsa aniqroq regex qo'shing
-      ) {
+      if (typeof backendMsg === "string" && /email/i.test(backendMsg)) {
         setErrors((prev) => ({ ...prev, email: backendMsg }));
       }
     } finally {
@@ -248,7 +243,7 @@ export default function RegisterForm() {
   }
 
   return (
-    <div className={`${dark ? "dark" : ""}`}>
+    <div>
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-6">
         <div className="max-w-md w-full bg-white dark:bg-gray-800 shadow-md rounded-2xl p-6 text-gray-800 dark:text-gray-200">
           {/* Header */}
@@ -458,14 +453,15 @@ const OAuthButton: React.FC<{
     onClick={onClick}
     className="w-full rounded-lg border p-2 text-sm flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-600"
   >
-    <img
+    <Image
       src={
         provider === "google"
           ? "/img/icons8-google-48.png"
           : "/img/icons8-github-48.png"
       }
       alt={provider}
-      className="w-5 h-5"
+      width={20}
+      height={20}
     />
     {label}
   </button>
