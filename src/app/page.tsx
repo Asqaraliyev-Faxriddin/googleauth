@@ -92,7 +92,7 @@ const translations: Record<Lang, Record<string, string>> = {
 export default function RegisterForm() {
 
   
-  let router = useRouter()
+  const router = useRouter()
   const setUser = useUserStore((s) => s.setUser);
 
 
