@@ -5,6 +5,9 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertColor, AlertProps } from "@mui/material/Alert";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { useRouter } from "next/navigation";
+import { useUserStore } from "@/store/useUserStore";
+import axios from "axios";
 
 // MUI Alert komponenti
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
@@ -87,6 +90,13 @@ const translations: Record<Lang, Record<string, string>> = {
 };
 
 export default function RegisterForm() {
+
+  
+  let router = useRouter()
+  const setUser = useUserStore((s) => s.setUser);
+
+
+
   const [form, setForm] = useState<FormData>({
     firstName: "",
     lastName: "",
@@ -141,21 +151,32 @@ export default function RegisterForm() {
       setAlertOpen(true);
       return;
     }
+  
     setSubmitting(true);
     try {
-      await new Promise((r) => setTimeout(r, 800));
-      setAlertMessage("Ro‘yxatdan o‘tdingiz!");
+      // 1️⃣ Global store ga yozamiz
+      setUser({
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        password: form.password,
+        age: Number(form.age),
+      });
+  
+      // 2️⃣ Backendga emailni yuboramiz
+      await axios.post("https://faxriddin.umidjon-dev.uz/verification/send", {
+        type: "register",
+        email: form.email,
+      });
+  
+      // 3️⃣ Snackbar + router.push
+      setAlertMessage("Emailingizga code yuborildi!");
       setAlertSeverity("success");
       setAlertOpen(true);
-      setForm({
-        firstName: "",
-        lastName: "",
-        age: "",
-        email: "",
-        password: "",
-        repeatPassword: "",
-      });
+  
+      router.push("/sms/email/code");
     } catch (err) {
+      console.error(err);
       setAlertMessage("Xatolik yuz berdi.");
       setAlertSeverity("error");
       setAlertOpen(true);
