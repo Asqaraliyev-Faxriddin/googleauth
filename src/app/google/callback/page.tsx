@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, FormEvent, ChangeEvent, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertColor, AlertProps } from "@mui/material/Alert";
@@ -18,7 +18,6 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
 
 export default function GooglePasswordForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [password, setPassword] = useState("");
   const [age, setAge] = useState("");
@@ -35,17 +34,20 @@ export default function GooglePasswordForm() {
 
   // ✅ querydan tokenlarni olish
   useEffect(() => {
-    const access = searchParams.get("accessToken");
-    const refresh = searchParams.get("refreshToken");
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const access = params.get("accessToken");
+      const refresh = params.get("refreshToken");
 
-    if (access) {
-      setAccessToken(access);
-      localStorage.setItem("accessToken", access);
+      if (access) {
+        setAccessToken(access);
+        localStorage.setItem("accessToken", access);
+      }
+      if (refresh) {
+        localStorage.setItem("refreshToken", refresh);
+      }
     }
-    if (refresh) {
-      localStorage.setItem("refreshToken", refresh);
-    }
-  }, [searchParams]);
+  }, []);
 
   // ✅ form submit
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
