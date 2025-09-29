@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import React, { useState, FormEvent, ChangeEvent, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
@@ -42,9 +40,11 @@ export default function GooglePasswordForm() {
 
     if (access) {
       setAccessToken(access);
-      localStorage.setItem("accessToken", access);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("accessToken", access);
+      }
     }
-    if (refresh) {
+    if (refresh && typeof window !== "undefined") {
       localStorage.setItem("refreshToken", refresh);
     }
   }, [searchParams]);
@@ -73,12 +73,17 @@ export default function GooglePasswordForm() {
 
       setTimeout(() => router.push("/profile"), 1500);
     } catch (err) {
-      const error = err as unknown as { response?: { data?: { message?: string } }; message?: string };
+      const error = err as unknown as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
       const errMessage =
         error.response?.data?.message || error.message || "Xatolik yuz berdi";
       setAlertMessage(errMessage);
       setAlertSeverity("error");
       setAlertOpen(true);
+    } finally {
+      setLoading(false);
     }
   }
 
