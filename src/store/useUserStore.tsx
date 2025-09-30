@@ -13,7 +13,7 @@ type UserState = {
   dark: boolean;
   setUser: (user: User) => void;
   clearUser: () => void;
-  toggleDark: () => void;
+  setDark: () => void;
 };
 
 export const useUserStore = create<UserState>((set) => ({
@@ -22,5 +22,5 @@ export const useUserStore = create<UserState>((set) => ({
 
   setUser: (user) => set({ user }),
   clearUser: () => set({ user: null }),
-  toggleDark: () => set((state) => ({ dark: !state.dark })),
+  setDark: () => set((state) => ({ dark: !state.dark })),
 }));
