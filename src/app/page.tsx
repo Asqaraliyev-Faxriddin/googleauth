@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/useUserStore";
 import axios from "axios";
 import Image from "next/image";
+import Link from "next/link";
+
 
 // MUI Alert komponenti
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
@@ -37,6 +39,7 @@ const translations: Record<Lang, Record<string, string>> = {
     lastname: "Familiya",
     age: "Yosh",
     email: "Email",
+    login:"Ro'yxatdan o'tganmisiz? Kirish",
     password: "Parol",
     repeatPassword: "Parolni takrorlang",
     required: "majburiy",
@@ -55,6 +58,8 @@ const translations: Record<Lang, Record<string, string>> = {
     firstname: "Firstname",
     lastname: "Lastname",
     age: "Age",
+    login:"Already registered? Login",
+
     email: "Email",
     password: "Password",
     repeatPassword: "Repeat password",
@@ -72,6 +77,8 @@ const translations: Record<Lang, Record<string, string>> = {
   ru: {
     register: "Регистрация",
     firstname: "Имя",
+    login:"Уже зарегистрированы? Войти",
+
     lastname: "Фамилия",
     age: "Возраст",
     email: "Эл. почта",
@@ -114,6 +121,8 @@ export default function RegisterForm() {
   const [alertSeverity, setAlertSeverity] = useState<AlertColor>("success");
 
   const t = translations[lang];
+  const login = translations[lang];
+
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -368,6 +377,14 @@ export default function RegisterForm() {
           </div>
 
           <p className="mt-4 text-xs text-gray-400">{t.note}</p>
+          <Link
+       href="/login"
+      className="  text-blue-500 font-medium hover:underline transition-colors duration-200 "
+     >
+      {t.login}
+    </Link>
+
+
 
           {/* MUI Snackbar Alert */}
           <Snackbar
