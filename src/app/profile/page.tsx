@@ -17,9 +17,9 @@ export default function Page() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter() 
+  const router = useRouter()  
 
-  useEffect(() => {
+  useEffect(() => { 
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem("accessToken");
