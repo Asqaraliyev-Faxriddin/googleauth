@@ -75,7 +75,7 @@ export default function LoginForm() {
 
     try {
       const res = await axios.post<LoginResponse>(
-        "https://faxriddin.umidjon-dev.uz/auth/login",
+        "https://faxriddin.bobur-dev.uz/auth/login",
         form
       );
 

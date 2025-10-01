@@ -58,7 +58,7 @@ export default function GooglePasswordForm() {
       if (!accessToken) throw new Error("Token topilmadi");
 
       await axios.post(
-        "https://faxriddin.umidjon-dev.uz/auth/google/password",
+        "https://faxriddin.bobur-dev.uz/auth/google/password",
         { password, age: Number(age) },
         {
           headers: { Authorization: `Bearer ${accessToken}` },
