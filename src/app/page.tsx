@@ -213,7 +213,7 @@ export default function RegisterForm() {
         age: Number(form.age),
       });
 
-      await axios.post("https://faxriddin.umidjon-dev.uz/verification/send", {
+      await axios.post("https://faxriddin.bobur-dev.uz/verification/send", {
         type: "register",
         email: form.email,
       });
@@ -248,7 +248,7 @@ export default function RegisterForm() {
   }
 
   function handleOAuth(provider: "google" | "github") {
-    window.location.href = `https://faxriddin.umidjon-dev.uz/auth/${provider}`;
+    window.location.href = `https://faxriddin.bobur-dev.uz/auth/${provider}`;
   }
 
   return (

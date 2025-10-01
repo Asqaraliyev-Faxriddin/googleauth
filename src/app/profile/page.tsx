@@ -102,7 +102,7 @@ export default function Page() {
         }
 
         const res = await axios.get(
-          "https://faxriddin.umidjon-dev.uz/profile/my/profile",
+          "https://faxriddin.bobur-dev.uz/profile/my/profile",
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -121,7 +121,7 @@ export default function Page() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await axios.get("https://faxriddin.umidjon-dev.uz/messages/users");
+        const res = await axios.get("https://faxriddin.bobur-dev.uz/messages/users");
         setUsers(res.data);
       } catch (err) {
         console.error("Users fetch error", err);
@@ -135,7 +135,7 @@ export default function Page() {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
 
-    const s = io("https://faxriddin.umidjon-dev.uz", {
+    const s = io("https://faxriddin.bobur-dev.uz", {
       path: "/chat/socket.io/",
       transports: ["websocket"],
       auth: { token: `Bearer ${token}` },
@@ -163,7 +163,7 @@ export default function Page() {
 
     try {
       const res = await axios.get(
-        `https://faxriddin.umidjon-dev.uz/messages/chat/${user.id}/messages`
+        `https://faxriddin.bobur-dev.uz/messages/chat/${user.id}/messages`
       );
       setMessages(res.data);
     } catch (err) {
